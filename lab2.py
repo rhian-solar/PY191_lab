@@ -20,6 +20,39 @@ def findNextNL(c):
     
     return c
 
+def lineBounds(c):
+    c = max(0, min(c, len(text)))
+    start = text.rfind("\n", 0, c) + 1
+    end = text.find("\n", c)
+    if end == -1:
+        end = len(text)
+    return start, end
+
+def moveCursorUp():
+    global cursor
+
+    start, end = lineBounds(cursor)
+    if start == 0:
+        cursor = 0
+        return
+
+    column = cursor - start
+    previousStart, previousEnd = lineBounds(start - 1)
+    cursor = previousStart + min(column, previousEnd - previousStart)
+
+def moveCursorDown():
+    global cursor
+
+    start, end = lineBounds(cursor)
+    if end == len(text):
+        cursor = len(text)
+        return
+
+    column = cursor - start
+    nextStart = end + 1
+    nextEnd = lineBounds(nextStart)[1]
+    cursor = nextStart + min(column, nextEnd - nextStart)
+
 def draw(screen):
     screen.clear()
 
@@ -209,85 +242,9 @@ def main(screen):
         #BONUS: Can you figure out how to select one line up/down by yourself?
 
         elif key == curses.KEY_UP:
-        
-
-            # words = text.split("\n")
-            # lineCounts = [len(word) for word in words]
-            # currentLine = 0
-            # charCount = 0
-            # for count in lineCounts:
-            #     charCount += count
-            #     if charCount >= cursor:
-            #         break
-            #     currentLine += 1
-
-            # if currentLine == 0:
-            #     cursor = 0
-            # else:
-            #     prevCharCount = charCount - lineCounts[currentLine]
-            #     overhang = cursor - prevCharCount - lineCounts[currentLine-1]
-            #     if overhang < 0:
-            #         cursor -= overhang
-            #     cursor = cursor - lineCounts[currentLine-1] - 1
-            if cursor >= len(text) or text[cursor] == '\n':
-                    if text[cursor-1] == text[cursor-2] == '\n':
-                        cursor -= 1
-                        continue
-            lastNL = findLastNL(cursor)
-            if lastNL <= 0:
-                cursor = 0
-            else:
-                
-                charsToRight = cursor - lastNL - 1
-                lastLast = findLastNL(lastNL - 1)
-                lastLineLen = lastNL - lastLast
-                if charsToRight > lastLineLen:
-                    charsToRight = lastLineLen-1
-                
-                cursor = lastLast + charsToRight + 1
-                if (lastLast == 0 and charsToRight > lastLineLen):
-                    cursor -= 1
-                
-            
+            moveCursorUp()
 
         elif key == curses.KEY_DOWN:
-
-            # words = text.split("\n")
-            # lineCounts = [len(word) for word in words]
-            # currentLine = 0
-            # charCount = 0
-            # for count in lineCounts:
-            #     currentLine += 1
-            #     charCount += count
-            #     if charCount >= cursor:
-            #         break
-
-            # if currentLine == len(lineCounts):
-            #     cursor = len(text)
-            # else:
-            #     cursor = cursor + lineCounts[currentLine-1]+1
-            #     if cursor > len(text):
-            #         cursor = len(text)-1
-            if cursor >= len(text) or text[cursor] == '\n':
-                    cursor -= 1
-                    if text[cursor] == '\n':
-                        cursor += 2
-                        continue
-            lastNL = findLastNL(cursor)
-            nextNL = findNextNL(cursor)
-            if nextNL == len(text)-1:
-                cursor = len(text)-1
-            else:
-                
-                charsToRight = cursor - lastNL - 1
-                if lastNL == 0:
-                    charsToRight += 1
-                nextNext = findNextNL(nextNL+1)
-                nextLineLen = nextNext - nextNL
-                if charsToRight > nextLineLen:
-                    charsToRight = nextLineLen-1
-                
-                cursor = nextNL + charsToRight + 1
-
+            moveCursorDown()
 
 curses.wrapper(main)
